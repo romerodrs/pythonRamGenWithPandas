@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 '''
 Created on 26 sept. 2016
 
@@ -8,37 +9,31 @@ from pandas import DataFrame, read_csv, merge
 
 import pandas as pd
 import random
+import sys
+
+import numpy as np # importando numpy
 
 class MainModule:
-    # self.
-    def __init__(self):
+    # constructor
+    def __init__(self, accounts=100, counterparty=10, collateral=10):
         print('Starting')
         self.fake = Faker()
         
-        print( "###### Generador Accounts ######\n\n")
-        print( "cantidad de accounts?" )
-        accounts = input("Introduce tu opcion:\n")
-        accounts = int(accounts)
-        print( "cantidad de counter_party (x account)" )
-        counterparty = input("Introduce tu opcion:\n")
-        counterparty = int(counterparty)
-        print( "cantidad de collateral (x account)" )
-        collateral = input("Introduce tu opcion:\n")
-        collateral = int(collateral)
-        
         tenors = 60
-
+        average_num_counterparties_per_account = 3
+        average_num_collateral_per_account = 5
+        
         self.init_config_id()
-        self.init_accounts(accounts)
+        self.init_accounts(int(accounts))
         self.init_tenors(tenors)
-        self.init_collateral(collateral)
-        self.init_counterparty(counterparty)
+        self.init_collateral(int(collateral))
+        self.init_counterparty(int(counterparty))
         self.generateModelCoreCalc()
         self.generateModelOthRep()
         self.generateNonModelOthRep()
         self.generateModelTenorOutput()
-        self.generateModelCollateral()
-        self.generateCounterparty()
+        self.generateModelCollateral(average_num_collateral_per_account)
+        self.generateCounterparty(average_num_counterparties_per_account)
         print('Done')
     
       
@@ -47,42 +42,34 @@ class MainModule:
         #print(self.dfConfigId)
         
     def init_accounts(self, accounts):
-        __account_deal_id = []
-        __facility_id = []
-        for _ in range(accounts):
-            __account_deal_id.append(self.fake.pystr(min_chars=None, max_chars=10))
-            __facility_id.append(self.fake.pystr(min_chars=None, max_chars=10))
+        __account_deal_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]
+        __facility_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]    
         accountList = list(zip(__account_deal_id, __facility_id))
         self.dfAccount = pd.DataFrame(data=accountList, columns=['account_deal_id', 'facility_id'])
         self.dfAccount['config_id'] = self.config_id
         #print(self.dfAccount)
     
     def init_tenors(self, tenors):
-        __tenors = []
-        for i in range(tenors):
-            __tenors.append(i)
+        __tenors = [ i for i in range(tenors) ]
         tenorList = list(zip(__tenors))
         self.dfTenors = pd.DataFrame(data=tenorList, columns=['tenor_mth'])
         #print(self.dfTenors)
     
     def init_collateral(self, collateral):
-        __collateral = []
-        __collateral_alpha = []
-        for i in range(collateral):
-            __collateral.append(i)
-            __collateral_alpha.append(random.uniform(0,1))
-        collateralList = list(zip(__collateral, __collateral_alpha))
-        self.dfCollateral = pd.DataFrame(data=collateralList, columns=['collateral_id', 'random'])
+        #__collateral = [i  for i in range(collateral)]
+        #__collateral_alpha = [random.uniform(0,1) for i in range(collateral) ]
+        #collateralList = list(zip(__collateral, __collateral_alpha))
+        #self.dfCollateral = pd.DataFrame(data=collateralList, columns=['collateral_id', 'random'])
+        self.collateralList = [i  for i in range(collateral)]
+        
         #print(self.dfCollateral)
     
     def init_counterparty(self, counterparty):
-        __counterparty = []
-        __counterparty_alpha = []
-        for i in range(counterparty):
-            __counterparty.append(i)
-            __counterparty_alpha.append(random.uniform(0,1))
-        counterpartyList = list(zip(__counterparty, __counterparty_alpha))
-        self.dfCounterParty = pd.DataFrame(data=counterpartyList, columns=['customer_id', 'random'])
+        #__counterparty = [i for i in range(counterparty)]
+        #__counterparty_alpha = [random.uniform(0,1) for i in range(counterparty)]
+        #counterpartyList = list(zip(__counterparty, __counterparty_alpha))
+        #self.dfCounterParty = pd.DataFrame(data=counterpartyList, columns=['customer_id', 'random'])
+        self.counterpartyList = [i for i in range(counterparty)]
         #print(self.dfCounterParty)
     
     def generateModelCoreCalc(self):
@@ -150,38 +137,51 @@ class MainModule:
         #print(dfModeltenorOuputCsv)
         dfModeltenorOuputCsv.to_csv('model_tenor_output.csv', index = False)
         
-    def generateModelCollateral(self):
+    def generateModelCollateral(self, average_num_collateral_per_account):
         dfModelCollateral = pd.DataFrame(columns=['reposession_date', 'repossesion_reason', 'ltv_origination_val', 'ltv_current_val',
                                                   'balance_at_origination_amt', 'original_valuation_amt', 'curr_hpl_valuation_amt',
                                                   'curr_avm_valuation_amt', 'number_attribute_1', 'number_attribute_2', 
                                                   'number_attribute_3', 'number_attribute_4', 'number_attribute_5',
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5', 
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5' ])
-        dfCollateralFiltered = self.dfCollateral[(self.dfCollateral.random < 0.1 )].copy()
+        #dfCollateralFiltered = self.dfCollateral[(self.dfCollateral.random < 0.1 )].copy()
+        collateralListFiltered = np.random.choice(self.collateralList,average_num_collateral_per_account)
+        dfCollateralFiltered = pd.DataFrame(data=collateralListFiltered, columns=['collateral_id'])
         #print(dfCollateralFiltered)
         dfCollateralFiltered["key"] = 0
         dfModelCollateralCollateralId = merge(self.dfAccount, dfCollateralFiltered, on='key')
         del dfModelCollateralCollateralId["key"]
-        del dfModelCollateralCollateralId["random"]
+        #del dfModelCollateralCollateralId["random"]
         dfMoldeCollateralCsv = dfModelCollateralCollateralId.join(dfModelCollateral)
         #print(dfMoldeCollateralCsv)
         dfMoldeCollateralCsv.to_csv('model_collateral.csv', index = False)
 
-    def generateCounterparty(self):
+    def generateCounterparty(self, average_num_counterparties_per_account):
         dfModelCounterParty = pd.DataFrame(columns=['customer_name', 'country_risk_code', 'country_incorp_res_code', 'number_attribute_1', 'number_attribute_2', 
                                                   'number_attribute_3', 'number_attribute_4', 'number_attribute_5',
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5', 
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5'])
-        dfCounterPartyFiltered = self.dfCounterParty[(self.dfCounterParty.random < 0.2)].copy()
-        #print(dfCounterPartyFiltered)
+        #dfCounterPartyFiltered = self.dfCounterParty[(self.dfCounterParty.random < 0.2)].copy()
+        print(self.counterpartyList)
+        counterPartyListFiltered = np.random.choice(self.counterpartyList, average_num_counterparties_per_account, replace=False)
+        print(counterPartyListFiltered)
+        dfCounterPartyFiltered = pd.DataFrame(data=counterPartyListFiltered, columns=['customer_id'])
+        #print(dfCounterPartyFiltered) 
         dfCounterPartyFiltered["key"] = 0
         dfCounterPartyId = merge(self.dfAccount, dfCounterPartyFiltered, on='key')
         del dfCounterPartyId["key"]
-        del dfCounterPartyId["random"]
+        #del dfCounterPartyId["random"]
         dfModelCounterPartyCsv = dfCounterPartyId.join(dfModelCounterParty)
         #print(dfModelCounterPartyCsv)
         dfModelCounterPartyCsv.to_csv('model_counter_party.csv', index=False)
         
 if __name__ == '__main__':
-    mainModule = MainModule()
+    if len(sys.argv)-1 == 3:
+        mainModule = MainModule(sys.argv[1], sys.argv[2], sys.argv[3])
+    elif len(sys.argv)-1 == 2:
+        mainModule = MainModule(sys.argv[1], sys.argv[2])
+    elif len(sys.argv)-1 == 1:
+        mainModule = MainModule(sys.argv[1])
+    else:
+        mainMoudle = MainModule()
     pass
