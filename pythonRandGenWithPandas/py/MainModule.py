@@ -16,29 +16,29 @@ import numpy as np
 
 class MainModule:
     # constructor
-    def __init__(self, args):# accounts=100, counterparty=10, collateral=10):
+    def __init__(self, accounts, counterparty, collateral, tenors, average_num_counterparties_per_account, average_num_collateral_per_account):
         print('Starting')
         self.fake = Faker()
         
-        accounts = 100    #args[0]
-        counterparty = 10 #args[1]
-        collateral = 10   #args[2]
-        tenors = 60     #args[3]
-        average_num_counterparties_per_account = 3  #args[4]
-        average_num_collateral_per_account = 5  #args[5]
+        #accounts = 100    #args[0]
+        #counterparty = 10 #args[1]
+        #collateral = 10   #args[2]
+        #tenors = 60     #args[3]
+        #average_num_counterparties_per_account = 3  #args[4]
+        #average_num_collateral_per_account = 5  #args[5]
         
-        if(len(args) >= 1):
-            accounts = args[0]
-            if(len(args) >= 2):
-                counterparty = args[1]
-                if(len(args) >= 3):
-                    collateral = args[2]
-                    if(len(args) >= 4):
-                        tenors = args[3]
-                        if(len(args) >= 5):
-                            average_num_counterparties_per_account = args[4]
-                            if(len(args) >= 6):
-                                average_num_collateral_per_account = args[5]               
+        #if(len(args) >= 1):
+        #    accounts = args[0]
+        #    if(len(args) >= 2):
+        #        counterparty = args[1]
+        #        if(len(args) >= 3):
+        #            collateral = args[2]
+        #            if(len(args) >= 4):
+        #                tenors = args[3]
+        #                if(len(args) >= 5):
+        #                    average_num_counterparties_per_account = args[4]
+        #                    if(len(args) >= 6):
+        #                        average_num_collateral_per_account = args[5]               
         
         self.init_config_id()
         self.init_accounts(accounts)
@@ -196,30 +196,23 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Generate CSV with random values')
     
-    parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                        help='an integer with user values')
+    #parser.add_argument('values',  nargs='?', const=1, type=int,
+    #                    help='an integer with user values')
     
-    parser.add_argument('--accounts', dest='accumulate', action='store_const',
-                        const=sum, default=max,
-                        help='param. 1 default:100')
-    parser.add_argument('--counterparty', dest='args', action='store_const',
-                        const=sum, default=max,
-                        help='param. 2 default: 10')
-    parser.add_argument('--collateral', dest='args', action='store_const',
-                        const=sum, default=max,
-                        help='param. 3 default: 10')
-    parser.add_argument('--tenors', dest='args', action='store_const',
-                        const=sum, default=max,
-                        help='param. 4 default: 6')
-    parser.add_argument('--average_num_counterparties_per_account', dest='args', action='store_const',
-                        const=sum, default=max,
-                        help='param. 5  default: 3')
-    parser.add_argument('--average_num_collateral_per_account', dest='accumulate', action='store_const',
-                        const=sum, default=max,
-                        help='param. 6 default: 5')
+    parser.add_argument('--accounts', nargs='?', const=1, type=int, default=100,
+                        help='account to generate default:100')
+    parser.add_argument('--counterparties', nargs='?', const=1, type=int, default=10,
+                        help='counterparty number (default: 10)')
+    parser.add_argument('--collaterals', nargs='?', const=1, type=int, default=10,
+                        help='collateral number (default: 10)')
+    parser.add_argument('--tenors',nargs='?', const=1, type=int, default=6,
+                        help='number of tenors (default: 6)')
+    parser.add_argument('--average_num_counterparties_per_account', nargs='?', const=1, type=int, default=3,
+                        help='average_num_counterparties_per_account  (default: 3)')
+    parser.add_argument('--average_num_collateral_per_account', nargs='?', const=1, type=int, default=5,
+                        help='average_num_collateral_per_account (default: 5)')
     args = []
-    args = parser.parse_args().integers
-    #print(*args)
-    #print(args[0])
-    mainModule = MainModule(args)
+    args = parser.parse_args()
+    print(args)
+    mainModule = MainModule(args.accounts, args.counterparties, args.collaterals, args.tenors, args.average_num_counterparties_per_account, args.average_num_collateral_per_account)
     pass
