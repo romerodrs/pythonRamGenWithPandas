@@ -10,23 +10,40 @@ from pandas import DataFrame, read_csv, merge
 import pandas as pd
 import random
 import sys
+import argparse
 
-import numpy as np # importando numpy
+import numpy as np
 
 class MainModule:
     # constructor
-    def __init__(self, accounts=100, counterparty=10, collateral=10):
+    def __init__(self, args):# accounts=100, counterparty=10, collateral=10):
         print('Starting')
         self.fake = Faker()
         
-        tenors = 60
-        average_num_counterparties_per_account = 3
-        average_num_collateral_per_account = 5
+        accounts = 100    #args[0]
+        counterparty = 10 #args[1]
+        collateral = 10   #args[2]
+        tenors = 60     #args[3]
+        average_num_counterparties_per_account = 3  #args[4]
+        average_num_collateral_per_account = 5  #args[5]
+        
+        if(len(args) >= 1):
+            accounts = args[0]
+            if(len(args) >= 2):
+                counterparty = args[1]
+                if(len(args) >= 3):
+                    collateral = args[2]
+                    if(len(args) >= 4):
+                        tenors = args[3]
+                        if(len(args) >= 5):
+                            average_num_counterparties_per_account = args[4]
+                            if(len(args) >= 6):
+                                average_num_collateral_per_account = args[5]               
         
         self.init_config_id()
-        self.init_accounts(int(accounts))
+        self.init_accounts(accounts)
         self.init_tenors(tenors)
-        self.init_collateral(int(collateral))
+        self.init_collateral(collateral)
         self.init_counterparty(int(counterparty))
         self.generateModelCoreCalc()
         self.generateModelOthRep()
@@ -173,14 +190,36 @@ class MainModule:
         #print(dfModelCounterPartyCsv)
         #print(dfModelCounterPartyCsvSorted)
         dfModelCounterPartyCsvSorted.to_csv('model_counter_party.csv', index=False)
-        
+
+            
 if __name__ == '__main__':
-    if len(sys.argv)-1 == 3:
-        mainModule = MainModule(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv)-1 == 2:
-        mainModule = MainModule(sys.argv[1], sys.argv[2])
-    elif len(sys.argv)-1 == 1:
-        mainModule = MainModule(sys.argv[1])
-    else:
-        mainMoudle = MainModule()
+
+    parser = argparse.ArgumentParser(description='Generate CSV with random values')
+    
+    parser.add_argument('integers', metavar='N', type=int, nargs='+',
+                        help='an integer with user values')
+    
+    parser.add_argument('--accounts', dest='accumulate', action='store_const',
+                        const=sum, default=max,
+                        help='param. 1 default:100')
+    parser.add_argument('--counterparty', dest='args', action='store_const',
+                        const=sum, default=max,
+                        help='param. 2 default: 10')
+    parser.add_argument('--collateral', dest='args', action='store_const',
+                        const=sum, default=max,
+                        help='param. 3 default: 10')
+    parser.add_argument('--tenors', dest='args', action='store_const',
+                        const=sum, default=max,
+                        help='param. 4 default: 6')
+    parser.add_argument('--average_num_counterparties_per_account', dest='args', action='store_const',
+                        const=sum, default=max,
+                        help='param. 5  default: 3')
+    parser.add_argument('--average_num_collateral_per_account', dest='accumulate', action='store_const',
+                        const=sum, default=max,
+                        help='param. 6 default: 5')
+    args = []
+    args = parser.parse_args().integers
+    #print(*args)
+    #print(args[0])
+    mainModule = MainModule(args)
     pass
