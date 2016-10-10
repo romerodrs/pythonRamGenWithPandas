@@ -4,23 +4,29 @@ Created on 26 sept. 2016
 
 @author: dlrr
 '''
-from faker import Faker
-from pandas import DataFrame, read_csv, merge
-
-import pandas as pd
-import random
 import argparse
 from datetime import datetime
 
+#from faker import Faker
+from pandas import  merge
 
+import random
+import string
 import numpy as np
-from _cffi_backend import string
+import pandas as pd
 
 class MainModule:
     
     def __init__(self, reporting_date):
-        self.fake = Faker()
+        #self.fake = Faker()
         self.reporting_date = reporting_date
+    
+    def random_string_generator(self):
+        chars = string.ascii_lowercase + string.digits
+        return ''.join(random.choice(chars) for _ in range(10))
+    
+    def random_int_generator(self):
+        return random.randrange(999999)
     
     def generate_csv(self, accounts, counterparty, collateral, tenors, average_num_counterparties_per_account, average_num_collateral_per_account, scenarios):
         self.init_accounts(accounts)
@@ -37,8 +43,10 @@ class MainModule:
       
         
     def init_accounts(self, accounts):
-        __account_deal_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]
-        __facility_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]    
+        #__account_deal_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]
+        #__facility_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]    
+        __account_deal_id = [ self.random_string_generator() for _ in range(accounts) ]
+        __facility_id = [ self.random_string_generator() for _ in range(accounts) ]
         accountList = list(zip(__account_deal_id, __facility_id))
         self.dfAccount = pd.DataFrame(data=accountList, columns=['account_deal_id', 'facility_id'])
         self.dfAccount['config_id'] = self.config_id
@@ -176,6 +184,9 @@ class MainModule:
         self.dfModelCounterPartyCsvSorted.to_csv('model_counter_party_'+self.reporting_date+'.csv', index=False)
         
     def genterate_config_files(self, config_id, reporting_date, portfolio_id, sub_portfolio_id, cluster_id, reporting_ccy, eff_from_date, eff_to_date):
+        if np.isnan(config_id):    
+            #fake = Faker()
+           config_id = self.random_int_generator()
         self.config_id = config_id
         index = []
         index.append(0)
@@ -208,7 +219,7 @@ class MainModule:
         nonModelCheckList = list(zip(non_model_files, non_model_num_rows))
         dfNonModelCheck = pd.DataFrame(nonModelCheckList, columns=['file', 'num_rows'])
         #print(dfNonModelCheck)
-        dfModelCheck.to_csv('non_model_check_'+self.reporting_date+'.csv', index=False)
+        dfNonModelCheck.to_csv('non_model_check_'+self.reporting_date+'.csv', index=False)
               
 if __name__ == '__main__':
     
@@ -255,9 +266,9 @@ if __name__ == '__main__':
     if len(args.scenarios) == 0:
         args.scenarios = [np.NaN]
         
-    if np.isnan(args.config_id):    
-        fake = Faker()
-        args.config_id = fake.pydecimal(left_digits=None, right_digits=None, positive=True)
+    #if np.isnan(args.config_id):    
+        #fake = Faker()
+       # args.config_id = fake.pydecimal(left_digits=None, right_digits=None, positive=True)
     
     print (args)
     mainModule = MainModule(args.reporting_date)
