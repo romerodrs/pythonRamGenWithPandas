@@ -238,24 +238,24 @@ if __name__ == '__main__':
                         help='average_num_collateral_per_account (default: 5)')
     
     #model_config
-    parser.add_argument('--config_id', nargs='?', const=1, type=int, default=np.NaN,
-                        help='config_id (default: 00)')
+    parser.add_argument('--config_id', nargs='?', const=1, type=int, default=1,
+                        help='config_id (default: 1)')
     parser.add_argument('--reporting_date', nargs='?', const=1, type=str, default=datetime.now().strftime("%Y%m%d"),
                         help='The Start Date - format YYYYMMDD (default: today)')
-    parser.add_argument('--portfolio_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='portfolio_id (default: NaN)')
-    parser.add_argument('--sub_portfolio_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='sub_portfolio_id (default: NaN)')
-    parser.add_argument('--cluster_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='cluster_id (default: NaN)')
-    parser.add_argument('--reporting_ccy', nargs='?', const=1, type=str, default=np.NaN,
-                        help='reporting_ccy (default: NaN)')
-    parser.add_argument('--effective_from_date', nargs='?', const=1, type=str, default=np.NaN,
-                        help='effective_from_date (default: NaN)')
-    parser.add_argument('--effective_to_date', nargs='?', const=1, type=str, default=np.NaN,
-                        help='effective_to_date (default: NaN)')
+    parser.add_argument('--portfolio_id', nargs='?', const=1, type=str, default='P',
+                        help='portfolio_id (default: P)')
+    parser.add_argument('--sub_portfolio_id', nargs='?', const=1, type=str, default='SP',
+                        help='sub_portfolio_id (default: SP)')
+    parser.add_argument('--cluster_id', nargs='?', const=1, type=str, default='1',
+                        help='cluster_id (default: 1)')
+    parser.add_argument('--reporting_ccy', nargs='?', const=1, type=str, default='GBP',
+                        help='reporting_ccy (default: GBP)')
+    parser.add_argument('--effective_from_date', nargs='?', const=1, type=str, default='17000101',
+                        help='effective_from_date (default: 1-jan-1700)')
+    parser.add_argument('--effective_to_date', nargs='?', const=1, type=str, default='25001231',
+                        help='effective_to_date (default: 31-dec-2500)')
     
-    parser.add_argument('--scenarios', '--s', '--sc', action='append', dest='scenarios', default=[], 
+    parser.add_argument('--scenarios', '--s', '--sc', action='append', dest='scenarios', default=['Base Case', 'BC1', 'BC2', 'WC1', 'WC2'], 
                         help='scenarios (default: NaN)')
         
     print('Starting')
@@ -263,14 +263,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     
-    if len(args.scenarios) == 0:
-        args.scenarios = [np.NaN]
-        
-    #if np.isnan(args.config_id):    
-        #fake = Faker()
-       # args.config_id = fake.pydecimal(left_digits=None, right_digits=None, positive=True)
-    
-    print (args)
     mainModule = MainModule(args.reporting_date)
    
     mainModule.genterate_config_files(args.config_id, args.reporting_date, args.portfolio_id, args.sub_portfolio_id, args.cluster_id,
