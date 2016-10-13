@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 '''
-Created on 26 sept. 2016
+Created on Oct2016
 
-@author: dlrr
+@author: Romero.Drs
 '''
 import argparse
 from datetime import datetime
