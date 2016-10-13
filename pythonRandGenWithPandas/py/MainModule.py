@@ -17,9 +17,9 @@ import pandas as pd
 
 class MainModule:
     
-    def __init__(self, reporting_date):
+    def __init__(self, rdate):
         #self.fake = Faker()
-        self.reporting_date = reporting_date
+        self.rdate = rdate
     
     def random_string_generator(self):
         chars = string.ascii_lowercase + string.digits
@@ -28,234 +28,204 @@ class MainModule:
     def random_int_generator(self):
         return random.randrange(999999)
     
-    def generate_csv(self, accounts, counterparty, collateral, tenors, average_num_counterparties_per_account, average_num_collateral_per_account, scenarios):
-        self.init_accounts(accounts)
-        self.init_tenors(tenors)
-        self.init_scenarios(scenarios)
-        self.init_collateral(collateral)
-        self.init_counterparty(int(counterparty))
-        self.generateModelCoreCalc()
-        self.generateModelOthRep()
-        self.generateNonModelOthRep()
-        self.generateModelTenorOutput()
-        self.generateModelCollateral(average_num_collateral_per_account)
-        self.generateCounterparty(average_num_counterparties_per_account)
+    def generate_csv(self, acc, cp, c, tenors, average_num_cp_per_account, average_num_c_per_account, sc):
+        self.init_acc(acc)
+        self.init_t(tenors)
+        self.init_sc(sc)
+        self.init_c(c)
+        self.init_cp(int(cp))
+        self.generateMCC()
+        self.generateMOR()
+        self.generateNMOR()
+        self.generateMTO()
+        self.generateMC(average_num_c_per_account)
+        self.generateCP(average_num_cp_per_account)
       
         
-    def init_accounts(self, accounts):
-        #__account_deal_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]
-        #__facility_id = [ self.fake.pystr(min_chars=None, max_chars=10) for _ in range(accounts) ]    
-        __account_deal_id = [ self.random_string_generator() for _ in range(accounts) ]
-        __facility_id = [ self.random_string_generator() for _ in range(accounts) ]
-        accountList = list(zip(__account_deal_id, __facility_id))
-        self.dfAccount = pd.DataFrame(data=accountList, columns=['account_deal_id', 'facility_id'])
-        self.dfAccount['config_id'] = self.config_id
-        self.dfAccount["key"] = 0
-        #print(self.dfAccount)
+    def init_acc(self, acc):
+        accdid = [ self.random_string_generator() for _ in range(acc) ]
+        fid = [ self.random_string_generator() for _ in range(acc) ]
+        accList = list(zip(accdid, fid))
+        self.dfAcc = pd.DataFrame(data=accList, columns=['acc_id', 'fc_id'])
+        self.dfAcc['c_id'] = self.cid
+        self.dfAcc["key"] = 0
+        #print(self.dfAcc)
     
-    def init_tenors(self, tenors):
-        __tenors = [ i for i in range(tenors) ]
-        tenorList = list(zip(__tenors))
-        self.dfTenors = pd.DataFrame(data=tenorList, columns=['tenor_mth'])
-        self.dfTenors["key"] = 0
-        #print(self.dfTenors)
+    def init_t(self, t):
+        tList = [ i for i in range(t) ]
+        self.dfT = pd.DataFrame(data=tList, columns=['t'])
+        self.dfT["key"] = 0
+        #print(self.dfT)
         
-    def init_scenarios(self, scenarios):
-        self.dfScenarios = pd.DataFrame(data=scenarios, columns=['scenario_type'])
-        self.dfScenarios["key"] = 0
-        #print(self.dfScenarios)
+    def init_sc(self, sc):
+        self.dfSc = pd.DataFrame(data=sc, columns=['sc'])
+        self.dfSc["key"] = 0
+        #print(self.dfSc)
     
-    def init_collateral(self, collateral):
-        collateralList = [i  for i in range(collateral)]
-        self.dfCollateral = pd.DataFrame(data=collateralList, columns=['collateral_id'])
-        self.dfCollateral["key"] = 0
-        #print(self.dfCollateral)
+    def init_c(self, c):
+        cList = [i  for i in range(c)]
+        self.dfC = pd.DataFrame(data=cList, columns=['c_id'])
+        self.dfC["key"] = 0
+        #print(self.dfC)
     
-    def init_counterparty(self, counterparty):
-        counterpartyList = [i for i in range(counterparty)]
-        self.dfCounterParty = pd.DataFrame(data=counterpartyList, columns=['customer_id'])
-        self.dfCounterParty["key"] = 0
-        #print(self.dfCounterParty)
+    def init_cp(self, cp):
+        cpList = [i for i in range(cp)]
+        self.dfCP = pd.DataFrame(data=cpList, columns=['cus_id'])
+        self.dfCP["key"] = 0
+        #print(self.dfCP)
     
-    def generateModelCoreCalc(self):
-        dfModelCoreCalcOutputRestColumns = pd.DataFrame(columns=['m12_pd_initial_recog_val',
-                                                 'lifetime_pd_initial_recog_val','m12_pd_current_val','lifetime_pd_current_val',
-                                                 'past_due_days','orig_barclays_grade_code','curr_barclays_grade_code',
-                                                 'watchlist_category_code','hram_code','default_ind','cured_ind',
-                                                 'max_contract_date','expected_mat_date','effective_interest_rate',
-                                                 'credit_adj_eff_int_rate','number_attribute_1','number_attribute_2',
+    def generateMCC(self):
+        dfColumns = pd.DataFrame(columns=['number_attribute_1','number_attribute_2',
                                                  'number_attribute_3','number_attribute_4','number_attribute_5',
                                                  'number_attribute_6','number_attribute_7','number_attribute_8',
                                                  'number_attribute_9','number_attribute_10','data_attribute_11',
                                                  'data_attribute_1','data_attribute_2','data_attribute_3',
                                                  'data_attribute_4','data_attribute_5','data_attribute_6',
                                                  'data_attribute_7','data_attribute_8','data_attribute_9'])
-        self.dfModelCoreCalcOutputCsv = self.dfAccount.join(dfModelCoreCalcOutputRestColumns)
-        del self.dfModelCoreCalcOutputCsv["key"]
-        self.dfModelCoreCalcOutputCsv.to_csv('model_core_calc_output_'+self.reporting_date+'.csv', index = False)
+        self.dfMCCOCsv = self.dfAcc.join(dfColumns)
+        del self.dfMCCOCsv["key"]
+        self.dfMCCOCsv.to_csv('mcco_'+self.rdate+'.csv', index = False)
         
-    def generateModelOthRep(self):
-        dfModelOthRepColumns = pd.DataFrame(columns=['drawn_gross_exp_amt',
-                                                     'undrawn_gross_exp_amt', 'default_amt', 'default_date', 'default_reason',
-                                                     'forbearance_entry_date', 'forbearance_ind', 'forbearance_type',
-                                                     'transcation_ccy', 'account_number', 'btl_residential_ind', 'charge_off_amt',
-                                                     'charge_off_date', 'charge_off_reason', 'off_balance_sheet_amt', 'off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'off_balance_sheet_amt','off_balance_sheet_amt','off_balance_sheet_amt',
-                                                     'number_attribute_1', 'number_attribute_2','number_attribute_3','number_attribute_4','number_attribute_5'
+    def generateMOR(self):
+        dfColumns = pd.DataFrame(columns=['number_attribute_1', 'number_attribute_2','number_attribute_3','number_attribute_4','number_attribute_5'
                                                      'number_attribute_6', 'number_attribute_7','number_attribute_8','number_attribute_9','number_attribute_10',
                                                      'number_attribute_11', 'number_attribute_12','number_attribute_13','number_attribute_14','number_attribute_15',
                                                      'number_attribute_16', 'number_attribute_17','number_attribute_18','number_attribute_19','number_attribute_20',
                                                      'number_attribute_21', 'number_attribute_22','number_attribute_23','number_attribute_24','number_attribute_25',
                                                      'date_attribute_1','date_attribute_2','date_attribute_3','date_attribute_4','date_attribute_5', 'date_attribute_6',
                                                      'date_attribute_7','date_attribute_8','date_attribute_9','date_attribute_10','date_attribute_1'])
-        self.dfModelOthRepCsv = self.dfAccount.join(dfModelOthRepColumns)
-        del self.dfModelOthRepCsv["key"]
-        self.dfModelOthRepCsv.to_csv('model_oth_rep_'+self.reporting_date+'.csv', index = False)
+        self.dfMORCsv = self.dfAcc.join(dfColumns)
+        del self.dfMORCsv["key"]
+        self.dfMORCsv.to_csv('mor_'+self.rdate+'.csv', index = False)
         
-    def generateNonModelOthRep(self):
-        dfNonModelOthRep = pd.DataFrame(columns=['reg_exposure_type', 'transaction_ccy', 'banking_trading_ind', 'basel_approach_ind', 'bic_code', 'branch_write_off_amt',
-                                                 'exchange_rate', 'gross_carying_amt', 'individual_collective_ind', 'sort_code', 'unit_type', 'recovered_asset_ind',
-                                                 'recovery_amt', 'write_off_ind', 'write_off_date', 'debt_col_agency_fees_amt', ' debt_sale_proceeds_amt',
-                                                 'feeds_in_suspence_amt', 'write_off_amt', 'pwor_amt', 'product_id', 'product_type', 'pwor_date', 'source_system_id',
-                                                 'write_off_interest_amt', 'write_off_principle_amt', 'write_off_reason', 'balance_at_write_off_amt', 'balance_interest_amt',
-                                                 'close_date', 'repossession_date', 'repossession_reason', 'statutory_unit_code', 'balance_principle_amt', 'close_date',
-                                                 'repossesion_date', 'repossesion_reason', 'statutory_unit_code', 'balance_principle_amt', 'appears_amt', 'latest_drawdown_date',
-                                                 'relationship_start_date', 'facility_open_date', 'initial_recognition_date', 'pay_type', 
-                                                 'number_attribute_1', 'number_attribute_2', 'number_attribute_3', 'number_attribute_4', 'number_attribute_5', 
+    def generateNMOR(self):
+        dfColumns = pd.DataFrame(columns=['number_attribute_1', 'number_attribute_2', 'number_attribute_3', 'number_attribute_4', 'number_attribute_5', 
                                                  'number_attribute_6', 'number_attribute_7', 'number_attribute_8', 'number_attribute_9', 'number_attribute_10', 
                                                  'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5', 
                                                  'date_attribute_6', 'date_attribute_7', 'date_attribute_8', 'date_attribute_9', 'date_attribute_10', 
                                                  'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5' ])
-        self.dfNonModelOthRepCsv = self.dfAccount.join(dfNonModelOthRep)
-        del self.dfNonModelOthRepCsv["key"]
-        self.dfNonModelOthRepCsv.to_csv('non_model_oth_rep_'+self.reporting_date+'.csv', index = False)
+        self.dfNMORCsv = self.dfAcc.join(dfColumns)
+        del self.dfNMORCsv["key"]
+        self.dfNMORCsv.to_csv('nmor_'+self.rdate+'.csv', index = False)
                 
-    def generateModelTenorOutput(self):
-        dfModelTenorOuput = pd.DataFrame(columns=['ifrs9_pd_val', 'ifrs9_lgd_val',  'ifrs9_ead_val'])
-        dfModeltenorOuputTenors = pd.merge(pd.merge(self.dfAccount, self.dfTenors, on='key'), self.dfScenarios, on='key')
-        #print( dfModeltenorOuputTenors )
-        del dfModeltenorOuputTenors["key"]
-        self.dfModeltenorOuputCsv = dfModeltenorOuputTenors.join(dfModelTenorOuput) 
-        #print(self.dfModeltenorOuputCsv)
-        self.dfModeltenorOuputCsv.to_csv('model_tenor_output_'+self.reporting_date+'.csv', index = False)
+    def generateMTO(self):
+        dfColumns = pd.DataFrame(columns=['val_1', 'val_2',  'val_3'])
+        dfMOT = pd.merge(pd.merge(self.dfAcc, self.dfT, on='key'), self.dfSc, on='key')
+        #print( dfMOT )
+        del dfMOT["key"]
+        self.dfMTOCsv = dfMOT.join(dfColumns) 
+        #print(self.dfMTOCsv)
+        self.dfMTOCsv.to_csv('mto_'+self.rdate+'.csv', index = False)
         
-    def generateModelCollateral(self, average_num_collateral_per_account):
-        dfModelCollateralColumns = pd.DataFrame(columns=['reposession_date', 'repossesion_reason', 'ltv_origination_val', 'ltv_current_val',
-                                                  'balance_at_origination_amt', 'original_valuation_amt', 'curr_hpl_valuation_amt',
-                                                  'curr_avm_valuation_amt', 'number_attribute_1', 'number_attribute_2', 
+    def generateMC(self, average_num_c_per_account):
+        dfColumns = pd.DataFrame(columns=['number_attribute_1', 'number_attribute_2', 
                                                   'number_attribute_3', 'number_attribute_4', 'number_attribute_5',
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5', 
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5' ])
-        #dfCollateralFiltered = self.dfCollateral[(self.dfCollateral.random < 0.1 )].copy()
-        #collateralListFiltered = np.random.choice(self.collateralList,average_num_collateral_per_account)
-        avg = average_num_collateral_per_account / len(self.dfCollateral)
-        dfCollateralId = merge(self.dfAccount, self.dfCollateral, on="key")
-        del dfCollateralId["key"]
-        #print(dfCollateral)
-        dfModelCollateral = dfCollateralId.sample(frac=avg, replace=True)
-        #print(dfModelCollateral)
-        dfModelCollateralCsv = dfModelCollateral.join(dfModelCollateralColumns)
-        #dfModelCollateralCsvSorted = dfModelCollateralCsv.sort('account_deal_id', ascending = False)
-        self.dfModelCollateralCsvSorted = dfModelCollateralCsv.sort_values(by='account_deal_id')
-        #print(dfModelCollateralCsv)
-        #print(dfModelCollateralCsvSorted)
-        self.dfModelCollateralCsvSorted.to_csv('model_collateral_'+self.reporting_date+'.csv', index = False)
+        #dfCollateralFiltered = self.dfC[(self.dfC.random < 0.1 )].copy()
+        #collateralListFiltered = np.random.choice(self.collateralList,average_num_c_per_account)
+        avg = average_num_c_per_account / len(self.dfC)
+        dfCid = merge(self.dfAcc, self.dfC, on="key")
+        del dfCid["key"]
+        #print(dfC)
+        dfMC = dfCid.sample(frac=avg, replace=True)
+        #print(dfMC)
+        dfMCCsv = dfMC.join(dfColumns)
+        #dfMCCsvSorted = dfMCCsv.sort('account_deal_id', ascending = False)
+        self.dfMCCsvSorted = dfMCCsv.sort_values(by='acc_id')
+        #print(dfMCCsv)
+        #print(dfMCCsvSorted)
+        self.dfMCCsvSorted.to_csv('mc_'+self.rdate+'.csv', index = False)
 
-    def generateCounterparty(self, average_num_counterparties_per_account):
-        dfModelCounterPartyColumns = pd.DataFrame(columns=['customer_name', 'country_risk_code', 'country_incorp_res_code', 'number_attribute_1', 'number_attribute_2', 
-                                                  'number_attribute_3', 'number_attribute_4', 'number_attribute_5',
+    def generateCP(self, average_num_cp_per_account):
+        dfColumns = pd.DataFrame(columns=['number_attribute_1', 'number_attribute_2', 'number_attribute_3', 'number_attribute_4', 'number_attribute_5',
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5', 
                                                   'date_attribute_1', 'date_attribute_2', 'date_attribute_3', 'date_attribute_4', 'date_attribute_5'])
-        avg = average_num_counterparties_per_account / len(self.dfCounterParty)
-        dfCounterPartyId = merge(self.dfAccount, self.dfCounterParty, on='key')
-        del dfCounterPartyId["key"]
-        #print(dfCounterPartyId.count())
-        dfModelCounterParty = dfCounterPartyId.sample(frac=avg, replace=True)
-        dfModelCounterPartyCsv = dfModelCounterParty.join(dfModelCounterPartyColumns)
-        #dfModelCounterPartyCsvSorted = dfModelCounterPartyCsv.sort('account_deal_id', ascending = False)
-        self.dfModelCounterPartyCsvSorted = dfModelCounterPartyCsv.sort_values(by='account_deal_id')
-        #print(dfModelCounterPartyCsv)
-        #print(dfModelCounterPartyCsvSorted)
-        self.dfModelCounterPartyCsvSorted.to_csv('model_counter_party_'+self.reporting_date+'.csv', index=False)
+        avg = average_num_cp_per_account / len(self.dfCP)
+        dfCPId = merge(self.dfAcc, self.dfCP, on='key')
+        del dfCPId["key"]
+        #print(dfCPId.count())
+        dfMCP = dfCPId.sample(frac=avg, replace=True)
+        dfMCPCsv = dfMCP.join(dfColumns)
+        #dfMCPCsvSorted = dfMCPCsv.sort('account_deal_id', ascending = False)
+        self.dfMCPCsvSorted = dfMCPCsv.sort_values(by='acc_id')
+        #print(dfMCPCsv)
+        #print(dfMCPCsvSorted)
+        self.dfMCPCsvSorted.to_csv('mcp_'+self.rdate+'.csv', index=False)
         
-    def genterate_config_files(self, config_id, reporting_date, portfolio_id, sub_portfolio_id, cluster_id, reporting_ccy, eff_from_date, eff_to_date):
-        if np.isnan(config_id):    
+    def genterate_config_files(self, cid, rdate, pid, spid, clid, ccy, eff_from_date, eff_to_date):
+        if np.isnan(cid):    
             #fake = Faker()
-           config_id = self.random_int_generator()
-        self.config_id = config_id
+           cid = self.random_int_generator()
+        self.cid = cid
         index = []
         index.append(0)
-        dfModelConfig = pd.DataFrame(index=index, columns=['key'])
-        dfModelConfig['config_id'] = config_id
-        dfModelConfig['reporting_date'] = reporting_date
-        dfModelConfig['portfolio_id'] = portfolio_id
-        dfModelConfig['sub_portfolio_id'] = sub_portfolio_id
-        dfModelConfig['cluster_id']= cluster_id
-        dfModelConfig['reporting_ccy'] = reporting_ccy
-        dfModelConfig['eff_from_date'] = eff_from_date
-        dfModelConfig['eff_to_date'] = eff_to_date
-        del dfModelConfig["key"]
-        #print(dfModelConfig)
-        dfModelConfig.to_csv('model_config_'+self.reporting_date+'.csv', index=False)
-        dfModelConfig.to_csv('non_model_config_'+self.reporting_date+'.csv', index=False)  
+        dfMC = pd.DataFrame(index=index, columns=['key'])
+        dfMC['c'] = cid
+        dfMC['rdate'] = rdate
+        dfMC['pid'] = pid
+        dfMC['spid'] = spid
+        dfMC['clid']= clid
+        dfMC['ccy'] = ccy
+        dfMC['eff_from_date'] = eff_from_date
+        dfMC['eff_to_date'] = eff_to_date
+        del dfMC["key"]
+        #print(dfMC)
+        dfMC.to_csv('mc_'+self.rdate+'.csv', index=False)
+        dfMC.to_csv('nmc_'+self.rdate+'.csv', index=False)  
     
     def generate_check_files(self):
-        model_files = ['model_core_calc_output_'+self.reporting_date+'.csv', 'model_oth_rep_'+self.reporting_date+'.csv', 'model_tenor_output_'+self.reporting_date+'.csv','model_collateral_'+self.reporting_date+'.csv', 'model_counter_party_'+self.reporting_date+'.csv']
-        model_num_rows = [len(self.dfModelCoreCalcOutputCsv), len(self.dfModelOthRepCsv), len(self.dfModeltenorOuputCsv), len(self.dfModelCollateralCsvSorted), len(self.dfModelCounterPartyCsvSorted) ]
+        mf = ['mcco_'+self.rdate+'.csv', 'mor_'+self.rdate+'.csv', 'mto_'+self.rdate+'.csv','mc_'+self.rdate+'.csv', 'mcp_'+self.rdate+'.csv']
+        m_num_rows = [len(self.dfMCCOCsv), len(self.dfMORCsv), len(self.dfMTOCsv), len(self.dfMCCsvSorted), len(self.dfMCPCsvSorted) ]
             
-        modelCheckList = list(zip(model_files, model_num_rows))
-        dfModelCheck = pd.DataFrame(modelCheckList, columns=['file', 'num_rows'])
-        #print(dfModelCheck)
-        dfModelCheck.to_csv('model_check_'+self.reporting_date+'.csv', index=False)
+        mcList = list(zip(mf, m_num_rows))
+        dfMC = pd.DataFrame(mcList, columns=['file', 'num_rows'])
+        #print(dfMC)
+        dfMC.to_csv('m_check_'+self.rdate+'.csv', index=False)
         
-        non_model_files = ['non_model_oth_rep_'+self.reporting_date+'.csv']
-        non_model_num_rows = [len(self.dfNonModelOthRepCsv)]
+        nmf = ['nmor_'+self.rdate+'.csv']
+        nm_num_rows = [len(self.dfNMORCsv)]
         
-        nonModelCheckList = list(zip(non_model_files, non_model_num_rows))
-        dfNonModelCheck = pd.DataFrame(nonModelCheckList, columns=['file', 'num_rows'])
-        #print(dfNonModelCheck)
-        dfNonModelCheck.to_csv('non_model_check_'+self.reporting_date+'.csv', index=False)
+        nmList = list(zip(nmf, nm_num_rows))
+        dfNMC = pd.DataFrame(nmList, columns=['file', 'num_rows'])
+        #print(dfNMC)
+        dfNMC.to_csv('nm_check_'+self.rdate+'.csv', index=False)
               
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Generate CSV with random values')
-    parser.add_argument('--accounts', nargs='?', const=1, type=int, default=100,
+    parser.add_argument('--acc', nargs='?', const=1, type=int, default=100,
                         help='account to generate default:100')
-    parser.add_argument('--counterparties', nargs='?', const=1, type=int, default=10,
-                        help='counterparty number (default: 10)')
-    parser.add_argument('--collaterals', nargs='?', const=1, type=int, default=10,
-                        help='collateral number (default: 10)')
-    parser.add_argument('--tenors',nargs='?', const=1, type=int, default=6,
-                        help='number of tenors (default: 6)')
-    parser.add_argument('--average_num_counterparties_per_account', nargs='?', const=1, type=int, default=3,
-                        help='average_num_counterparties_per_account  (default: 3)')
-    parser.add_argument('--average_num_collateral_per_account', nargs='?', const=1, type=int, default=5,
-                        help='average_num_collateral_per_account (default: 5)')
+    parser.add_argument('--cp', nargs='?', const=1, type=int, default=10,
+                        help='cp number (default: 10)')
+    parser.add_argument('--c', nargs='?', const=1, type=int, default=10,
+                        help='c number (default: 10)')
+    parser.add_argument('--t',nargs='?', const=1, type=int, default=6,
+                        help='number of t (default: 6)')
+    parser.add_argument('--average_num_cp_per_account', nargs='?', const=1, type=int, default=3,
+                        help='average_num_cp_per_account  (default: 3)')
+    parser.add_argument('--average_num_c_per_account', nargs='?', const=1, type=int, default=5,
+                        help='average_num_c_per_account (default: 5)')
     
     #model_config
-    parser.add_argument('--config_id', nargs='?', const=1, type=int, default=np.NaN,
-                        help='config_id (default: 00)')
-    parser.add_argument('--reporting_date', nargs='?', const=1, type=str, default=datetime.now().strftime("%Y%m%d"),
+    parser.add_argument('--cid', nargs='?', const=1, type=int, default=1,
+                        help='cid (default: 1)')
+    parser.add_argument('--rdate', nargs='?', const=1, type=str, default=datetime.now().strftime("%Y%m%d"),
                         help='The Start Date - format YYYYMMDD (default: today)')
-    parser.add_argument('--portfolio_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='portfolio_id (default: NaN)')
-    parser.add_argument('--sub_portfolio_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='sub_portfolio_id (default: NaN)')
-    parser.add_argument('--cluster_id', nargs='?', const=1, type=str, default=np.NaN,
-                        help='cluster_id (default: NaN)')
-    parser.add_argument('--reporting_ccy', nargs='?', const=1, type=str, default=np.NaN,
-                        help='reporting_ccy (default: NaN)')
-    parser.add_argument('--effective_from_date', nargs='?', const=1, type=str, default=np.NaN,
-                        help='effective_from_date (default: NaN)')
-    parser.add_argument('--effective_to_date', nargs='?', const=1, type=str, default=np.NaN,
-                        help='effective_to_date (default: NaN)')
+    parser.add_argument('--pid', nargs='?', const=1, type=str, default='P',
+                        help='pid (default: P)')
+    parser.add_argument('--spid', nargs='?', const=1, type=str, default='SP',
+                        help='sub_portfolio_id (default: SP)')
+    parser.add_argument('--clid', nargs='?', const=1, type=str, default='1',
+                        help='clid (default: 1)')
+    parser.add_argument('--ccy', nargs='?', const=1, type=str, default='GBP',
+                        help='ccy (default: GBP)')
+    parser.add_argument('--eff_from_date', nargs='?', const=1, type=str, default='17000101',
+                        help='effective_from_date (default: 1-jan-1700)')
+    parser.add_argument('--eff_to_date', nargs='?', const=1, type=str, default='25001231',
+                        help='effective_to_date (default: 31-dec-2500)')
     
-    parser.add_argument('--scenarios', '--s', '--sc', action='append', dest='scenarios', default=[], 
+    parser.add_argument('--s', '--sc', action='append', dest='scn', default=['Base Case', 'BC1', 'BC2', 'WC1', 'WC2'], 
                         help='scenarios (default: NaN)')
         
     print('Starting')
@@ -263,21 +233,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
     
-    if len(args.scenarios) == 0:
-        args.scenarios = [np.NaN]
-        
-    #if np.isnan(args.config_id):    
-        #fake = Faker()
-       # args.config_id = fake.pydecimal(left_digits=None, right_digits=None, positive=True)
-    
-    print (args)
-    mainModule = MainModule(args.reporting_date)
+    mainModule = MainModule(args.rdate)
    
-    mainModule.genterate_config_files(args.config_id, args.reporting_date, args.portfolio_id, args.sub_portfolio_id, args.cluster_id,
-                            args.reporting_ccy, args.effective_from_date, args.effective_to_date)
+    mainModule.genterate_config_files(args.cid, args.rdate, args.pid, args.spid, args.clid,
+                            args.ccy, args.eff_from_date, args.eff_to_date)
      
-    mainModule.generate_csv(args.accounts, args.counterparties, args.collaterals, args.tenors, 
-                            args.average_num_counterparties_per_account, args.average_num_collateral_per_account, args.scenarios)
+    mainModule.generate_csv(args.acc, args.cp, args.c, args.t, 
+                            args.average_num_cp_per_account, args.average_num_c_per_account, args.scn)
     
     mainModule.generate_check_files()
     print('Done')
